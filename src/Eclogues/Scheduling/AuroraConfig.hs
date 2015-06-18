@@ -144,7 +144,7 @@ aResources :: Resources -> AResources
 aResources (Resources disk ram cpu _) = AResources (ceiling $ disk `asVal` byte) (ceiling $ ram `asVal` byte) (cpu `asVal` core)
 
 auroraJobConfig :: Role -> TaskSpec -> JobConfiguration
-auroraJobConfig role (TaskSpec name cmd resources@(Resources disk ram cpu _) _ _ _) = job where
+auroraJobConfig role (TaskSpec name cmd resources@(Resources disk ram cpu _) _ _ _ _) = job where
     jobKey = defaultJobKey role name
     owner = Identity role role
     job = JobConfiguration  { jobConfiguration_key                 = jobKey

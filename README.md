@@ -66,6 +66,7 @@ Post a task spec of the form:
         "cpu": "0.1",
         "time": "5"
     },
+    "inputfiles": [],
     "outputfiles": ["hello.txt"],
     "capturestdout": false,
     "dependson": []

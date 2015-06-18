@@ -3,7 +3,7 @@
 module Main where
 
 import Eclogues.TaskSpec ( Command, RunResult (..)
-                         , TaskSpec, taskDependsOn, taskCommand, taskOutputFiles, taskCaptureStdout, time )
+                         , TaskSpec, taskDependsOn, taskCommand, taskInputFiles, taskOutputFiles, taskCaptureStdout, time )
 import Eclogues.Util (readJSON, orError)
 import Units
 
@@ -17,11 +17,12 @@ import qualified Data.Text.Lazy as L
 import System.Directory (createDirectoryIfMissing, doesFileExist, doesDirectoryExist, copyFile)
 import System.Environment (getArgs)
 import System.Exit (ExitCode (..))
-import System.FilePath ((</>))
+import System.FilePath ((</>), takeFileName)
 import System.FilePath.Glob (glob)
 import System.Process (callProcess, spawnProcess, waitForProcess)
 
-data SubexecutorConfig = SubexecutorConfig { jobsDir :: FilePath }
+data SubexecutorConfig = SubexecutorConfig { jobsDir       :: FilePath
+                                           , inputFilesDir :: FilePath }
 
 $(deriveJSON defaultOptions ''SubexecutorConfig)
 
@@ -44,11 +45,12 @@ copyFileOrDir from to = go where
     to' = to ++ from
     copyDir = callProcess "mkdir" ["-p", to'] *> copyDirContents from to'
 
-runTask :: FilePath -> String -> IO ()
-runTask path name = do
+runTask :: SubexecutorConfig -> String -> IO ()
+runTask (SubexecutorConfig jobDir ifDir') name = do
     spec <- orError =<< readJSON (specDir </> "spec.json") :: IO TaskSpec
 
-    copyDirContents (specDir </> "workspace") "."
+    -- TODO: Better error if this fails
+    mapM_ (uncurry copyFile . ((ifDir ++) &&& ("." </>) . takeFileName)) $ spec ^. taskInputFiles
     createDirectoryIfMissing False depsDir
     mapM_ copyDep $ spec ^. taskDependsOn
 
@@ -61,13 +63,14 @@ runTask path name = do
         [fn] -> copyFile fn $ specDir </> "output/stdout"
         _    -> error "Stdout log file missing"
     where
-        specDir = path </> name
+        ifDir = ifDir' ++ "/"
+        specDir = jobDir </> name
         depsDir = "./yb-dependencies/"
-        depOutput n = path </> n </> "output"
+        depOutput n = jobDir </> n </> "output"
         copyDep = uncurry copyDirContents . (depOutput &&& (depsDir ++)) . L.unpack
 
 main :: IO ()
 main = do
     conf <- orError =<< readJSON "/etc/xdg/eclogues/subexecutor.json"
     (name:_) <- getArgs
-    runTask (jobsDir conf) name
+    runTask conf name

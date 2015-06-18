@@ -34,6 +34,7 @@ data Resources = Resources { _disk :: Value Double MB
 data TaskSpec = TaskSpec { _taskName          :: Name
                          , _taskCommand       :: Command
                          , _taskResources     :: Resources
+                         , _taskInputFiles    :: [FilePath]
                          , _taskOutputFiles   :: [FilePath]
                          , _taskCaptureStdout :: Bool
                          , _taskDependsOn     :: [Name] }

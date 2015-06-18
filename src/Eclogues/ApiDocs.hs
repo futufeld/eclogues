@@ -32,10 +32,10 @@ res :: Resources
 res = (Resources (mega byte 10) (mebi byte 10) (core 0.1) (second 5))
 
 spec :: TaskSpec
-spec = TaskSpec "hello" "echo hello world > hello.txt" res ["hello.txt"] False []
+spec = TaskSpec "hello" "echo hello world > hello.txt" res [] ["hello.txt"] False []
 
 depSpec :: TaskSpec
-depSpec = TaskSpec "cat-hello" "cat yb-dependencies/hello/hello.txt" res [] True ["hello"]
+depSpec = TaskSpec "cat-hello" "cat yb-dependencies/hello/hello.txt" res [] [] True ["hello"]
 
 instance ToSample TaskSpec TaskSpec where
     toSamples _ = [("A job with output", spec)
@@ -43,7 +43,7 @@ instance ToSample TaskSpec TaskSpec where
 
 failedSpec :: JobStatus
 failedSpec = JobStatus deadSpec (Failed $ NonZeroExitCode 1) nil where
-    deadSpec = TaskSpec "i-fail" "exit 1" res [] False []
+    deadSpec = TaskSpec "i-fail" "exit 1" res [] [] False []
 
 instance ToSample JobStatus JobStatus where
     toSample _ = Just $ failedSpec
