@@ -1,5 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{-|
+Module      : $Header$
+Copyright   : (c) 2015 Swinburne Software Innovation Lab
+License     : BSD3
+
+Maintainer  : Shannon Pace <space@swin.edu.au>
+Stability   : unstable
+Portability : portable
+
+Test entry point.
+-}
+
+
 module Main where
 
 import Api_Types
@@ -8,6 +21,7 @@ import qualified Eclogues.Job as Job
 import Eclogues.Scheduling.AuroraConfig
 import Units
 import StateSpec
+import MonitorSpec
 
 import Test.Hspec
 
@@ -51,3 +65,4 @@ main = hspec $ do
     testThrift
     testUnits
     testState
+    testMonitor
